@@ -60,6 +60,11 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // TODO: print all variables (excluding <FREE_SPACE> entries)
+            //std::cout << _processes[i]->pid << "|" << _processes[i]->variables[j]->name << "|" <<
+                //_processes[i]->variables[j]->virtual_address << "|" << _processes[i]->variables[j]->size << std::endl;
+            
+            printf("%6d|%15s|%14u|%12u\n", _processes[i]->pid, _processes[i]->variables[j]->name,
+                _processes[i]->variables[j]->virtual_address, _processes[i]->variables[j]->size);
         }
     }
 }
