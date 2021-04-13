@@ -1,3 +1,5 @@
+// Peter Henkhaus
+
 #include <iostream>
 #include <string>
 #include <cstring>
