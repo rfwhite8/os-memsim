@@ -42,13 +42,27 @@ int main(int argc, char **argv)
     while (command != "exit") {
         // Handle command
         // TODO: implement this!
+        if(command == "create"){
 
+        }else if(command == "allocate"){
+
+        }else if(command == "set"){
+
+        }else if(command == "print"){
+
+        }else if(command == "free"){
+
+        }else if(command == "terminate"){
+
+        }else{
+            printf("error: command not recognized\n");
+        }
         // Get next command
         std::cout << "> ";
         std::getline (std::cin, command);
     }
 
-    // Cean up
+    // Clean up
     free(memory);
     delete mmu;
     delete page_table;

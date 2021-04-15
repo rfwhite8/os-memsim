@@ -66,6 +66,6 @@ void PageTable::print()
 
     for (i = 0; i < keys.size(); i++)
     {
-        // TODO: print all pages
+        //printf("%6d|%12d|%14d", sortedKeys[i]->pid, );
     }
 }
