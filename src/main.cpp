@@ -1,4 +1,4 @@
-// Peter Henkhaus
+// Peter Henkhaus and Ray White
 
 #include <iostream>
 #include <string>
@@ -43,17 +43,36 @@ int main(int argc, char **argv)
         // Handle command
         // TODO: implement this!
         if(command == "create"){
-
+            int text_size = 0;//user input
+            int data_size = 0;//user input
+            createProcess(data_size, data_size, mmu, page_table);
+            //print PID
         }else if(command == "allocate"){
-
+            int pid = 0;//user input
+            std::string var_name = "";//user input
+            DataType type = DataType::Char;//user input
+            int num_elements = 0;//user input
+            allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
+            //print Virtual Memory Adress
         }else if(command == "set"){
-
+            int pid = 0;//user input
+            std::string var_name = "";//user input
+            int offset = 0;//user input
+            //DataType?[] *value = ... an unspecified number of user inputs
+            void *value;//placeholder variable
+            void *memory;//i have NO IDEA
+            setVariable(pid, var_name, offset, value, mmu, page_table, memory);
+            //can do multiple values all at once
         }else if(command == "print"){
-
+            page_table->print();
+            //idk if this is right
         }else if(command == "free"){
-
+            int pid = 0;//user input
+            std::string var_name = "";//user input
+            freeVariable(pid, var_name, mmu, page_table);
         }else if(command == "terminate"){
-
+            int pid = 0;//user input
+            terminateProcess(pid, mmu, page_table);
         }else{
             printf("error: command not recognized\n");
         }
