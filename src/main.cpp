@@ -6,6 +6,7 @@
 #include "mmu.h"
 #include "pagetable.h"
 #include <string.h>
+#include <vector>
 
 //starting
 void printStartMessage(int page_size);
@@ -14,7 +15,8 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
-void splitString(std::string text, char d, char **result);
+void splitString(std::string text, char d, std::vector<std::string>& result);
+void vectorOfStringsToArrayOfCharArrays(std::vector<std::string>& list, char ***result);
 
 int main(int argc, char **argv)
 {
@@ -41,39 +43,45 @@ int main(int argc, char **argv)
     std::string command;
     std::cout << "> ";
     std::getline (std::cin, command);
-    while (command != "exit") {
-        std::<vector>::string segmented_command[] = {};
-        splitString(command, ' ', segmented_command);//splits string for error checking
+    std::cin.clear();
+
+    while (command.compare("exit") != 0) {
+        std::vector<std::string> vector_command;
+
+        char **segmented_command;
+        splitString(command, ' ', vector_command);//splits string for error checking
+        vectorOfStringsToArrayOfCharArrays(vector_command, &segmented_command);
+
         // Handle command
-        if(segmented_command[0] == "create"){
-            int text_size = std::stoi(segmented_command[1]);//user input
-            int data_size = std::stoi(segmented_command[2]);//user input
+        if(strcmp(segmented_command[0], "create") == 0){
+            int text_size = std::stoi(segmented_command[1]);
+            int data_size = std::stoi(segmented_command[2]);
             createProcess(data_size, data_size, mmu, page_table);
-        }else if(segmented_command[0] == "allocate"){
-            int pid = std::stoi(segmented_command[1]);//user input
-            std::string var_name = segmented_command[2];//user input
-            DataType type = DataType::Int;//(DataType)segmented_command[3];//user input
-            int num_elements = std::stoi(segmented_command[4]);//user input
+            //print PID
+        }else if(strcmp(segmented_command[0], "allocate") == 0){
+            int pid = std::stoi(segmented_command[1]);
+            std::string var_name = segmented_command[2];
+            DataType type = DataType::Int;//(DataType)segmented_command[3];
+            int num_elements = std::stoi(segmented_command[4]);
             allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
             //print Virtual Memory Adress
-        }else if(segmented_command[0] == "set"){
-            int pid = std::stoi(segmented_command[1]);//user input
-            std::string var_name = segmented_command[2];//user input
-            int offset = std::stoi(segmented_command[3]);//user input
+        }else if(strcmp(segmented_command[0], "set") == 0){
+            int pid = std::stoi(segmented_command[1]);
+            std::string var_name = segmented_command[2];
+            int offset = std::stoi(segmented_command[3]);
             //DataType?[] *value = ... an unspecified number of user inputs
             void *value;//placeholder variable
             void *memory;//i have NO IDEA
             setVariable(pid, var_name, offset, value, mmu, page_table, memory);
             //can do multiple values all at once
-        }else if(segmented_command[0] == "print"){
+        }else if(strcmp(segmented_command[0], "print") == 0){
             page_table->print();
-            //idk if this is right
-        }else if(segmented_command[0] == "free"){
-            int pid = std::stoi(segmented_command[1]);//user input
-            std::string var_name = segmented_command[2];//user input
+        }else if(strcmp(segmented_command[0], "free") == 0){
+            int pid = std::stoi(segmented_command[1]);
+            std::string var_name = segmented_command[2];
             freeVariable(pid, var_name, mmu, page_table);
-        }else if(segmented_command[0] == "terminate"){
-            int pid = std::stoi(segmented_command[1]);//user input
+        }else if(strcmp(segmented_command[0], "terminate") == 0){
+            int pid = std::stoi(segmented_command[1]);
             terminateProcess(pid, mmu, page_table);
         }else{
             printf("error: command not recognized\n");
@@ -147,18 +155,18 @@ void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
     //   - remove process from MMU
     //   - free all pages associated with given process
 }
-
 /*
    text: string to split
    d: character delimiter to split `text` on
-   result: NULL terminated list of strings (char **) - result will be stored here
+   result: vector of strings - result will be stored here
 */
-void splitString(std::string text, char d, char **result)
+void splitString(std::string text, char d, std::vector<std::string>& result)
 {
     enum states { NONE, IN_WORD, IN_STRING } state = NONE;
+
     int i;
-    std::vector<std::string> list;
     std::string token;
+    result.clear();
     for (i = 0; i < text.length(); i++)
     {
         char c = text[i];
@@ -181,7 +189,7 @@ void splitString(std::string text, char d, char **result)
             case IN_WORD:
                 if (c == d)
                 {
-                    list.push_back(token);
+                    result.push_back(token);
                     state = NONE;
                 }
                 else
@@ -192,7 +200,7 @@ void splitString(std::string text, char d, char **result)
             case IN_STRING:
                 if (c == '\"')
                 {
-                    list.push_back(token);
+                    result.push_back(token);
                     state = NONE;
                 }
                 else
@@ -204,12 +212,23 @@ void splitString(std::string text, char d, char **result)
     }
     if (state != NONE)
     {
-        list.push_back(token);
+        result.push_back(token);
     }
+}
 
+/*
+   list: vector of strings to convert to an array of character arrays
+   result: pointer to an array of character arrays when the vector of strings is copied to
+*/
+void vectorOfStringsToArrayOfCharArrays(std::vector<std::string>& list, char ***result)
+{
+    int i;
+    int result_length = list.size() + 1;
+    *result = new char*[result_length];
     for (i = 0; i < list.size(); i++)
     {
-        strcpy(result[i], list[i].c_str());
+        (*result)[i] = new char[list[i].length() + 1];
+        strcpy((*result)[i], list[i].c_str());
     }
-    result[list.size()] = NULL;
+    (*result)[list.size()] = NULL;
 }
