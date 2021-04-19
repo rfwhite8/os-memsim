@@ -5,6 +5,7 @@
 #include <cstring>
 #include "mmu.h"
 #include "pagetable.h"
+#include <string.h>
 
 //starting
 void printStartMessage(int page_size);
@@ -13,6 +14,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
+void splitString(std::string text, char d, char **result);
 
 int main(int argc, char **argv)
 {
@@ -40,38 +42,38 @@ int main(int argc, char **argv)
     std::cout << "> ";
     std::getline (std::cin, command);
     while (command != "exit") {
+        std::<vector>::string segmented_command[] = {};
+        splitString(command, ' ', segmented_command);//splits string for error checking
         // Handle command
-        // TODO: implement this!
-        if(command == "create"){
-            int text_size = 0;//user input
-            int data_size = 0;//user input
+        if(segmented_command[0] == "create"){
+            int text_size = std::stoi(segmented_command[1]);//user input
+            int data_size = std::stoi(segmented_command[2]);//user input
             createProcess(data_size, data_size, mmu, page_table);
-            //print PID
-        }else if(command == "allocate"){
-            int pid = 0;//user input
-            std::string var_name = "";//user input
-            DataType type = DataType::Char;//user input
-            int num_elements = 0;//user input
+        }else if(segmented_command[0] == "allocate"){
+            int pid = std::stoi(segmented_command[1]);//user input
+            std::string var_name = segmented_command[2];//user input
+            DataType type = DataType::Int;//(DataType)segmented_command[3];//user input
+            int num_elements = std::stoi(segmented_command[4]);//user input
             allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
             //print Virtual Memory Adress
-        }else if(command == "set"){
-            int pid = 0;//user input
-            std::string var_name = "";//user input
-            int offset = 0;//user input
+        }else if(segmented_command[0] == "set"){
+            int pid = std::stoi(segmented_command[1]);//user input
+            std::string var_name = segmented_command[2];//user input
+            int offset = std::stoi(segmented_command[3]);//user input
             //DataType?[] *value = ... an unspecified number of user inputs
             void *value;//placeholder variable
             void *memory;//i have NO IDEA
             setVariable(pid, var_name, offset, value, mmu, page_table, memory);
             //can do multiple values all at once
-        }else if(command == "print"){
+        }else if(segmented_command[0] == "print"){
             page_table->print();
             //idk if this is right
-        }else if(command == "free"){
-            int pid = 0;//user input
-            std::string var_name = "";//user input
+        }else if(segmented_command[0] == "free"){
+            int pid = std::stoi(segmented_command[1]);//user input
+            std::string var_name = segmented_command[2];//user input
             freeVariable(pid, var_name, mmu, page_table);
-        }else if(command == "terminate"){
-            int pid = 0;//user input
+        }else if(segmented_command[0] == "terminate"){
+            int pid = std::stoi(segmented_command[1]);//user input
             terminateProcess(pid, mmu, page_table);
         }else{
             printf("error: command not recognized\n");
@@ -144,4 +146,70 @@ void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
     // TODO: implement this!
     //   - remove process from MMU
     //   - free all pages associated with given process
+}
+
+/*
+   text: string to split
+   d: character delimiter to split `text` on
+   result: NULL terminated list of strings (char **) - result will be stored here
+*/
+void splitString(std::string text, char d, char **result)
+{
+    enum states { NONE, IN_WORD, IN_STRING } state = NONE;
+    int i;
+    std::vector<std::string> list;
+    std::string token;
+    for (i = 0; i < text.length(); i++)
+    {
+        char c = text[i];
+        switch (state) {
+            case NONE:
+                if (c != d)
+                {
+                    if (c == '\"')
+                    {
+                        state = IN_STRING;
+                        token = "";
+                    }
+                    else
+                    {
+                        state = IN_WORD;
+                        token = c;
+                    }
+                }
+                break;
+            case IN_WORD:
+                if (c == d)
+                {
+                    list.push_back(token);
+                    state = NONE;
+                }
+                else
+                {
+                    token += c;
+                }
+                break;
+            case IN_STRING:
+                if (c == '\"')
+                {
+                    list.push_back(token);
+                    state = NONE;
+                }
+                else
+                {
+                    token += c;
+                }
+                break;
+        }
+    }
+    if (state != NONE)
+    {
+        list.push_back(token);
+    }
+
+    for (i = 0; i < list.size(); i++)
+    {
+        strcpy(result[i], list[i].c_str());
+    }
+    result[list.size()] = NULL;
 }
