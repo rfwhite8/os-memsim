@@ -74,8 +74,18 @@ int main(int argc, char **argv)
             void *memory;//i have NO IDEA
             setVariable(pid, var_name, offset, value, mmu, page_table, memory);
             //can do multiple values all at once
-        }else if(strcmp(segmented_command[0], "print") == 0){
-            page_table->print();
+        }else if(strcmp(segmented_command[0], "print") == 0 && segmented_command[1] != NULL){
+            if(strcmp(segmented_command[1], "mmu") == 0){
+                mmu->print();
+            } else if(strcmp(segmented_command[1], "page") == 0){
+                page_table->print();
+            } else if(strcmp(segmented_command[1], "processes") == 0){
+                //print list of PIDs fpr processes that are still running
+            } /*else if it is a PID and variable name
+                print value
+            }*/else {
+                printf("error: print command not recognized\n");
+            }
         }else if(strcmp(segmented_command[0], "free") == 0){
             int pid = std::stoi(segmented_command[1]);
             std::string var_name = segmented_command[2];
@@ -120,8 +130,13 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
 {
     // TODO: implement this!
     //   - create new process in the MMU
+    int pid = mmu->createProcess();
     //   - allocate new variables for the <TEXT>, <GLOBALS>, and <STACK>
+    allocateVariable(pid, "<TEXT>", DataType::FreeSpace, text_size, mmu, page_table);
+    allocateVariable(pid, "<GLOBALS>", DataType::FreeSpace, data_size, mmu, page_table);
+    allocateVariable(pid, "<STACK>", DataType::FreeSpace, 65536, mmu, page_table);
     //   - print pid
+    printf("%d\n", pid);
 }
 
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
