@@ -70,3 +70,41 @@ void Mmu::print()
         }
     }
 }
+
+int findSpace(uint32_t pid, uint32_t size)
+{
+    uint32_t _max_size;
+    std::vector<Process*> _processes;
+
+    int address = -1;
+    int address_to_check = 0;
+    Process* process_to_check;
+
+    for(int i = 0; i < _processes.size(); i++)
+    {
+        if(pid == _processes[i]->pid)
+        {
+            process_to_check = _processes[i];
+        }
+    }
+
+    for(int i = 0; i < process_to_check->variables.size(); i++)
+    {
+        if(process_to_check->variables[i]->virtual_address - address_to_check >= size)
+        {
+            address = address_to_check;
+            break;
+        }
+        else
+        {
+            address_to_check = process_to_check->variables[i]->virtual_address + process_to_check->variables[i]->size;
+        }
+    }
+
+    if(address = -1 && _max_size - address_to_check >= size)
+    {
+        address = address_to_check;
+    }
+
+    return address;
+}

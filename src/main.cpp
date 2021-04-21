@@ -142,10 +142,30 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
+    int size = num_elements;
+    if(type == DataType::Short)
+    {
+        size *= 2;
+    }
+    else if(type == DataType::Int || type == DataType::Float)
+    {
+        size *= 4;
+    }
+    else if(type == DataType::Long || type == DataType::Double)
+    {
+        size *= 8;
+    }
     //   - find first free space within a page already allocated to this process that is large enough to fit the new variable
+    int address = mmu->findSpace(pid, size);
     //   - if no hole is large enough, allocate new page(s)
+    if(address = -1)
+    {
+        //TO DO: Allocate new page(s)
+    }
     //   - insert variable into MMU
+    mmu->addVariableToProcess(pid, var_name, type, size, address);
     //   - print virtual memory address
+    printf("%d\n", address);
 }
 
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
