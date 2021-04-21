@@ -71,7 +71,7 @@ void Mmu::print()
     }
 }
 
-int findSpace(uint32_t pid, uint32_t size)
+uint32_t findSpace(uint32_t pid, uint32_t size)
 {
     uint32_t _max_size;
     std::vector<Process*> _processes;

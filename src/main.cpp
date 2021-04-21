@@ -156,7 +156,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
         size *= 8;
     }
     //   - find first free space within a page already allocated to this process that is large enough to fit the new variable
-    int address = mmu->findSpace(pid, size);
+    uint32_t address = mmu->findSpace(pid, size);
     //   - if no hole is large enough, allocate new page(s)
     if(address = -1)
     {
