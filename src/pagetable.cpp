@@ -69,3 +69,8 @@ void PageTable::print()
         //printf("%6d|%12d|%14d", sortedKeys[i]->pid, );
     }
 }
+
+int PageTable::getPageSize()
+{
+    return _page_size;
+}

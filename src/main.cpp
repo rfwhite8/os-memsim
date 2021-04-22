@@ -11,7 +11,7 @@
 //starting
 void printStartMessage(int page_size);
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table);
-void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table);
+void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table, bool creation);
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
@@ -56,14 +56,42 @@ int main(int argc, char **argv)
         if(strcmp(segmented_command[0], "create") == 0){
             int text_size = std::stoi(segmented_command[1]);
             int data_size = std::stoi(segmented_command[2]);
-            createProcess(data_size, data_size, mmu, page_table);
+            createProcess(text_size, data_size, mmu, page_table);
             //print PID
         }else if(strcmp(segmented_command[0], "allocate") == 0){
             int pid = std::stoi(segmented_command[1]);
             std::string var_name = segmented_command[2];
-            DataType type = DataType::Int;//(DataType)segmented_command[3];
+            DataType type;
+            if(strcmp(segmented_command[3], "char") == 0)
+            {
+                type = DataType::Char;
+            }
+            else if(strcmp(segmented_command[3], "short") == 0)
+            {
+                type = DataType::Short;
+            }
+            else if(strcmp(segmented_command[3], "int") == 0)
+            {
+                type = DataType::Int;
+            }
+            else if(strcmp(segmented_command[3], "float") == 0)
+            {
+                type = DataType::Float;
+            }
+            else if(strcmp(segmented_command[3], "long") == 0)
+            {
+                type = DataType::Long;
+            }
+            else if(strcmp(segmented_command[3], "double") == 0)
+            {
+                type = DataType::Double;
+            }
+            else
+            {
+                type = DataType::Char;
+            }
             int num_elements = std::stoi(segmented_command[4]);
-            allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
+            allocateVariable(pid, var_name, type, num_elements, mmu, page_table, false);
             //print Virtual Memory Adress
         }else if(strcmp(segmented_command[0], "set") == 0){
             int pid = std::stoi(segmented_command[1]);
@@ -132,14 +160,14 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
     //   - create new process in the MMU
     int pid = mmu->createProcess();
     //   - allocate new variables for the <TEXT>, <GLOBALS>, and <STACK>
-    allocateVariable(pid, "<TEXT>", DataType::FreeSpace, text_size, mmu, page_table);
-    allocateVariable(pid, "<GLOBALS>", DataType::FreeSpace, data_size, mmu, page_table);
-    allocateVariable(pid, "<STACK>", DataType::FreeSpace, 65536, mmu, page_table);
+    allocateVariable(pid, "<TEXT>", DataType::Char, text_size, mmu, page_table, true);
+    allocateVariable(pid, "<GLOBALS>", DataType::Char, data_size, mmu, page_table, true);
+    allocateVariable(pid, "<STACK>", DataType::Char, 65536, mmu, page_table, true);
     //   - print pid
     printf("%d\n", pid);
 }
 
-void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
+void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table, bool creation)
 {
     // TODO: implement this!
     int size = num_elements;
@@ -156,16 +184,24 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
         size *= 8;
     }
     //   - find first free space within a page already allocated to this process that is large enough to fit the new variable
-    uint32_t address = mmu->findSpace(pid, size);
-    //   - if no hole is large enough, allocate new page(s)
-    if(address = -1)
+    int64_t address = -1;
+    while(address == -1)
     {
-        //TO DO: Allocate new page(s)
+        address = mmu->findSpace(pid, size, page_table->getPageSize());
+        //   - if no hole is large enough, allocate new page(s)
+        if(address == -1)
+        {
+            uint32_t page_count = mmu->newPage(pid);
+            page_table->addEntry(pid, page_count);
+        }
     }
     //   - insert variable into MMU
     mmu->addVariableToProcess(pid, var_name, type, size, address);
     //   - print virtual memory address
-    printf("%d\n", address);
+    if(!creation)
+    {
+        printf("%ld\n", address);
+    }
 }
 
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
