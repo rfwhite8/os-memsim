@@ -52,6 +52,14 @@ void Mmu::addVariableToProcess(uint32_t pid, std::string var_name, DataType type
     }
 }
 
+int Mmu::processPid(int index){
+    return _processes[index]->pid;
+}
+
+int Mmu::numProcesses(){
+    return _processes.size();
+}
+
 void Mmu::print()
 {
     int i, j;

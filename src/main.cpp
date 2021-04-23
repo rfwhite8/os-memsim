@@ -57,7 +57,6 @@ int main(int argc, char **argv)
             int text_size = std::stoi(segmented_command[1]);
             int data_size = std::stoi(segmented_command[2]);
             createProcess(text_size, data_size, mmu, page_table);
-            //print PID
         }else if(strcmp(segmented_command[0], "allocate") == 0){
             int pid = std::stoi(segmented_command[1]);
             std::string var_name = segmented_command[2];
@@ -108,7 +107,9 @@ int main(int argc, char **argv)
             } else if(strcmp(segmented_command[1], "page") == 0){
                 page_table->print();
             } else if(strcmp(segmented_command[1], "processes") == 0){
-                //print list of PIDs fpr processes that are still running
+                for(int i = 0; i < mmu->numProcesses(); i++){
+                    printf("%d\n", mmu->processPid(i));
+                }
             } /*else if it is a PID and variable name
                 print value
             }*/else {
