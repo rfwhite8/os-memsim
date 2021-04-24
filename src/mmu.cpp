@@ -134,3 +134,53 @@ uint32_t Mmu::newPage(uint32_t pid)
     process->page_count += 1;
     return process->page_count;
 }
+
+uint32_t Mmu::getVirtualAddress(uint32_t pid, std::string var_name)
+{
+    Process* process;
+    Variable* variable;
+
+    for(int i = 0; i < _processes.size(); i++)
+    {
+        if(pid == _processes[i]->pid)
+        {
+            process = _processes[i];
+            break;
+        }
+    }
+    for(int i = 0; i < process->variables.size(); i++)
+    {
+        if(var_name == process->variables[i]->name)
+        {
+            variable = process->variables[i];
+            break;
+        }
+    }
+
+    return variable->virtual_address;
+}
+
+DataType Mmu::getDataType(uint32_t pid, std::string var_name)
+{
+    Process* process;
+    Variable* variable;
+
+    for(int i = 0; i < _processes.size(); i++)
+    {
+        if(pid == _processes[i]->pid)
+        {
+            process = _processes[i];
+            break;
+        }
+    }
+    for(int i = 0; i < process->variables.size(); i++)
+    {
+        if(var_name == process->variables[i]->name)
+        {
+            variable = process->variables[i];
+            break;
+        }
+    }
+
+    return variable->type;
+}

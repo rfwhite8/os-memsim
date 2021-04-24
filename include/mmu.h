@@ -37,6 +37,8 @@ public:
     int numProcesses();
     uint32_t findSpace(uint32_t pid, uint32_t size, int page_size);
     uint32_t newPage(uint32_t pid);
+    uint32_t getVirtualAddress(uint32_t pid, std::string var_name);
+    DataType getDataType(uint32_t pid, std::string var_name);
 };
 
 #endif // __MMU_H_

@@ -209,6 +209,7 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
+    int physical_address = page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, var_name));
     //   - insert `value` into `memory` at physical address
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array)
