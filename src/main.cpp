@@ -58,83 +58,91 @@ int main(int argc, char **argv)
             int data_size = std::stoi(segmented_command[2]);
             createProcess(text_size, data_size, mmu, page_table);
         }else if(strcmp(segmented_command[0], "allocate") == 0){
-            int pid = std::stoi(segmented_command[1]);
-            std::string var_name = segmented_command[2];
-            DataType type;
-            if(strcmp(segmented_command[3], "char") == 0)
-            {
-                type = DataType::Char;
+            if(!mmu->checkPid(std::stoi(segmented_command[1]))){
+                printf("error: process not found\n");
+            }else {
+                int pid = std::stoi(segmented_command[1]);
+                std::string var_name = segmented_command[2];
+                DataType type;
+                if(strcmp(segmented_command[3], "char") == 0)
+                {
+                    type = DataType::Char;
+                }
+                else if(strcmp(segmented_command[3], "short") == 0)
+                {
+                    type = DataType::Short;
+                }
+                else if(strcmp(segmented_command[3], "int") == 0)
+                {
+                    type = DataType::Int;
+                }
+                else if(strcmp(segmented_command[3], "float") == 0)
+                {
+                    type = DataType::Float;
+                }
+                else if(strcmp(segmented_command[3], "long") == 0)
+                {
+                    type = DataType::Long;
+                }
+                else if(strcmp(segmented_command[3], "double") == 0)
+                {
+                    type = DataType::Double;
+                }
+                else
+                {
+                    type = DataType::Char;
+                }
+                int num_elements = std::stoi(segmented_command[4]);
+                allocateVariable(pid, var_name, type, num_elements, mmu, page_table, false);
+                //print Virtual Memory Adress
             }
-            else if(strcmp(segmented_command[3], "short") == 0)
-            {
-                type = DataType::Short;
-            }
-            else if(strcmp(segmented_command[3], "int") == 0)
-            {
-                type = DataType::Int;
-            }
-            else if(strcmp(segmented_command[3], "float") == 0)
-            {
-                type = DataType::Float;
-            }
-            else if(strcmp(segmented_command[3], "long") == 0)
-            {
-                type = DataType::Long;
-            }
-            else if(strcmp(segmented_command[3], "double") == 0)
-            {
-                type = DataType::Double;
-            }
-            else
-            {
-                type = DataType::Char;
-            }
-            int num_elements = std::stoi(segmented_command[4]);
-            allocateVariable(pid, var_name, type, num_elements, mmu, page_table, false);
-            //print Virtual Memory Adress
         }else if(strcmp(segmented_command[0], "set") == 0){
-            int pid = std::stoi(segmented_command[1]);
-            std::string var_name = segmented_command[2];
-            int offset = std::stoi(segmented_command[3]);
-            DataType type = mmu->getDataType(pid, var_name);
-            int var_size = 0;
-            int datype = -1;
-            if(type == DataType::Short)
-            {
-                datype = 1;
-                var_size = 2;
-            }
-            else if(type == DataType::Int)
-            {
-                datype = 2;
-                var_size = 4;
-            }
-            else if (type == DataType::Float)
-            {
-                datype = 3;
-                var_size = 4;
-            }
-            else if(type == DataType::Long)
-            {
-                datype = 4;
-                var_size = 8;
-            }
-            else if(type == DataType::Double)
-            {
-                datype = 5;
-                var_size = 8;
-            }
-            else
-            {
-                datype = 0;
-                var_size = 1;
-            }
-            for(int i = 4; i < vector_command.size(); i++)
-            {
-                setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory, datype);
-                offset += var_size;
-            }
-            //can do multiple values all at once
+            if(!mmu->checkPid(std::stoi(segmented_command[1]))){
+                printf("error: process not found\n");
+            } else {
+                int pid = std::stoi(segmented_command[1]);
+                std::string var_name = segmented_command[2];
+                int offset = std::stoi(segmented_command[3]);
+                DataType type = mmu->getDataType(pid, var_name);
+                int var_size = 0;
+                int datype = -1;
+                if(type == DataType::Short)
+                {
+                    datype = 1;
+                    var_size = 2;
+                }
+                else if(type == DataType::Int)
+                {
+                    datype = 2;
+                    var_size = 4;
+                }
+                else if (type == DataType::Float)
+                {
+                    datype = 3;
+                    var_size = 4;
+                }
+                else if(type == DataType::Long)
+                {
+                    datype = 4;
+                    var_size = 8;
+                }
+                else if(type == DataType::Double)
+                {
+                    datype = 5;
+                    var_size = 8;
+                }
+                else
+                {
+                    datype = 0;
+                    var_size = 1;
+                }
+                for(int i = 4; i < vector_command.size(); i++)
+                {
+                    setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory, datype);
+                    offset += var_size;
+                }
+                //can do multiple values all at once
+                }
         }else if(strcmp(segmented_command[0], "print") == 0 && segmented_command[1] != NULL){
             if(strcmp(segmented_command[1], "mmu") == 0){
                 mmu->print();
@@ -150,12 +158,20 @@ int main(int argc, char **argv)
                 printf("error: print command not recognized\n");
             }
         }else if(strcmp(segmented_command[0], "free") == 0){
-            int pid = std::stoi(segmented_command[1]);
-            std::string var_name = segmented_command[2];
-            freeVariable(pid, var_name, mmu, page_table);
+            if(!mmu->checkPid(std::stoi(segmented_command[1]))){
+                printf("error: process not found\n");
+            } else {
+                int pid = std::stoi(segmented_command[1]);
+                std::string var_name = segmented_command[2];
+                freeVariable(pid, var_name, mmu, page_table);
+            }
         }else if(strcmp(segmented_command[0], "terminate") == 0){
-            int pid = std::stoi(segmented_command[1]);
-            terminateProcess(pid, mmu, page_table);
+            if(!mmu->checkPid(std::stoi(segmented_command[1]))){
+                printf("error: process not found\n");
+            } else {
+                int pid = std::stoi(segmented_command[1]);
+                terminateProcess(pid, mmu, page_table);
+            }
         }else{
             printf("error: command not recognized\n");
         }
@@ -293,6 +309,7 @@ void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
     //   - remove process from MMU
+    mmu->deleteProcess(pid);
     //   - free all pages associated with given process
 }
 

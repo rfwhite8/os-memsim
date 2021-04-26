@@ -37,6 +37,7 @@ public:
     int getPhysicalAddress(uint32_t pid, uint32_t virtual_address);
     void print();
     int getPageSize();
+    std::vector<int> sortedFrames();
 };
 
 #endif // __PAGETABLE_H_

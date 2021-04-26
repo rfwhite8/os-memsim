@@ -29,6 +29,16 @@ uint32_t Mmu::createProcess()
     return proc->pid;
 }
 
+void Mmu::deleteProcess(uint32_t pid){
+    for (int i = 0; i < _processes.size(); i++)
+    {
+        if(_processes[i]->pid == pid){
+            _processes.erase(_processes.begin() + i);
+            break;
+        }
+    }
+}
+
 void Mmu::addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address)
 {
     int i;
@@ -54,6 +64,15 @@ void Mmu::addVariableToProcess(uint32_t pid, std::string var_name, DataType type
 
 int Mmu::processPid(int index){
     return _processes[index]->pid;
+}
+
+bool Mmu::checkPid(uint32_t pid){
+    for(int i = 0; i < _processes.size(); i++){
+        if(_processes[i]->pid == pid){
+            return true;
+        }
+    }
+    return false;
 }
 
 int Mmu::numProcesses(){
