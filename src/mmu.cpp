@@ -129,7 +129,7 @@ uint32_t Mmu::findSpace(uint32_t pid, uint32_t size, int page_size)
         }
     }
 
-    if(address = -1 && page_size*process_to_check->page_count - address_to_check >= size)
+    if(address == -1 && page_size*process_to_check->page_count - address_to_check >= size)
     {
         address = address_to_check;
     }

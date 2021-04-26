@@ -12,7 +12,7 @@
 void printStartMessage(int page_size);
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table);
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table, bool creation);
-void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int type);
+void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 void splitString(std::string text, char d, std::vector<std::string>& result);
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
                 }
                 for(int i = 4; i < vector_command.size(); i++)
                 {
-                    setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory, datype);
+                    setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory);
                     offset += var_size;
                 }
                 //can do multiple values all at once
@@ -235,7 +235,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
         size *= 8;
     }
     //   - find first free space within a page already allocated to this process that is large enough to fit the new variable
-    int64_t address = -1;
+    int address = -1;
     while(address == -1)
     {
         address = mmu->findSpace(pid, size, page_table->getPageSize());
@@ -255,47 +255,16 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }
 }
 
-void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int type)
+void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
     int physical_address = page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, var_name));
     physical_address += offset;
+    std::cout << "physical_address: " << physical_address << std::endl;
     //   - insert `value` into `memory` at physical address
-    if(type == 0)
-    {
-        char *temp = (char *)physical_address;
-        *temp = (char)value;
-    }
-    else if(type == 1)
-    {
-        short *temp = (short *)physical_address;
-        *temp = (short)value;
-    }
-    else if(type == 2)
-    {
-        int *temp = (int *)physical_address;
-        *temp = (int)value;
-    }
-    else if(type == 3)
-    {
-        float *temp = (float *)physical_address;
-        void *theValueAsVoidPtr = value;
-        float flt = *(float *)&theValueAsVoidPtr;
-        *temp = flt;
-    }
-    else if(type == 4)
-    {
-        long *temp = (long *)physical_address;
-        *temp = (long)value;
-    }
-    else if(type == 5)
-    {
-        double *temp = (double *)physical_address;
-        void *theValueAsVoidPtr = value;
-        double dbl = *(double *)&theValueAsVoidPtr;
-        *temp = dbl;
-    }
+    void *temp = (void *)physical_address;
+    temp = value;
 }
 
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table)
