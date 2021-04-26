@@ -12,7 +12,7 @@
 void printStartMessage(int page_size);
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table);
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table, bool creation);
-void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
+void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int type);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 void splitString(std::string text, char d, std::vector<std::string>& result);
@@ -96,10 +96,44 @@ int main(int argc, char **argv)
             int pid = std::stoi(segmented_command[1]);
             std::string var_name = segmented_command[2];
             int offset = std::stoi(segmented_command[3]);
-            //DataType?[] *value = ... an unspecified number of user inputs
-            void *value;//placeholder variable
-            void *memory;//i have NO IDEA
-            setVariable(pid, var_name, offset, value, mmu, page_table, memory);
+            DataType type = mmu->getDataType(pid, var_name);
+            int var_size = 0;
+            int datype = -1;
+            if(type == DataType::Short)
+            {
+                datype = 1;
+                var_size = 2;
+            }
+            else if(type == DataType::Int)
+            {
+                datype = 2;
+                var_size = 4;
+            }
+            else if (type == DataType::Float)
+            {
+                datype = 3;
+                var_size = 4;
+            }
+            else if(type == DataType::Long)
+            {
+                datype = 4;
+                var_size = 8;
+            }
+            else if(type == DataType::Double)
+            {
+                datype = 5;
+                var_size = 8;
+            }
+            else
+            {
+                datype = 0;
+                var_size = 1;
+            }
+            for(int i = 4; i < vector_command.size(); i++)
+            {
+                setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory, datype);
+                offset += var_size;
+            }
             //can do multiple values all at once
         }else if(strcmp(segmented_command[0], "print") == 0 && segmented_command[1] != NULL){
             if(strcmp(segmented_command[1], "mmu") == 0){
@@ -205,14 +239,47 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }
 }
 
-void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
+void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int type)
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
     int physical_address = page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, var_name));
+    physical_address += offset;
     //   - insert `value` into `memory` at physical address
-    //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
-    //           multiple elements of an array)
+    if(type == 0)
+    {
+        char *temp = (char *)physical_address;
+        *temp = (char)value;
+    }
+    else if(type == 1)
+    {
+        short *temp = (short *)physical_address;
+        *temp = (short)value;
+    }
+    else if(type == 2)
+    {
+        int *temp = (int *)physical_address;
+        *temp = (int)value;
+    }
+    else if(type == 3)
+    {
+        float *temp = (float *)physical_address;
+        void *theValueAsVoidPtr = value;
+        float flt = *(float *)&theValueAsVoidPtr;
+        *temp = flt;
+    }
+    else if(type == 4)
+    {
+        long *temp = (long *)physical_address;
+        *temp = (long)value;
+    }
+    else if(type == 5)
+    {
+        double *temp = (double *)physical_address;
+        void *theValueAsVoidPtr = value;
+        double dbl = *(double *)&theValueAsVoidPtr;
+        *temp = dbl;
+    }
 }
 
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table)
