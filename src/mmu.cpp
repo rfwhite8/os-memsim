@@ -75,6 +75,24 @@ bool Mmu::checkPid(uint32_t pid){
     return false;
 }
 
+bool Mmu::checkVariable(uint32_t pid, std::string var_name){
+
+    Process* process_to_check;
+    for(int i = 0; i < _processes.size(); i++){
+        if(_processes[i]->pid == pid){
+            process_to_check = _processes[i];
+            break;
+        }
+    }
+
+    for(int i = 0; i < process_to_check->variables.size(); i++){
+        if(process_to_check->variables[i]->name == var_name){
+            return true;
+        }
+    }
+    return false;
+}
+
 int Mmu::numProcesses(){
     return _processes.size();
 }
@@ -99,6 +117,57 @@ void Mmu::print()
             }
         }
     }
+}
+
+void Mmu::printVariable(uint32_t pid, std::string var_name, int physical_address)
+{
+    Process* process;
+    Variable* variable;
+
+    for(int i = 0; i < _processes.size(); i++)
+    {
+        if(pid == _processes[i]->pid)
+        {
+            process = _processes[i];
+            break;
+        }
+    }
+    for(int i = 0; i < process->variables.size(); i++)
+    {
+        if(var_name == process->variables[i]->name)
+        {
+            variable = process->variables[i];
+            break;
+        }
+    }
+
+    int data_size = 1;
+    if(variable->type == DataType::Short)
+    {
+        data_size = 2;
+    }
+    else if(variable->type == DataType::Int || variable->type == DataType::Float)
+    {
+        data_size = 4;
+    }
+    else if(variable->type == DataType::Long || variable->type == DataType::Double)
+    {
+        data_size = 8;
+    }
+
+    for(int i = 0; i < 4*data_size && i < variable->size; i += data_size)
+    {
+        void *temp = (void *)(physical_address + i);
+        char *charptr = (char *)temp;
+        std::cout << "hello2.5" << std::endl;
+        char result = *charptr;
+        std::cout << "hello3" << std::endl;
+        std::cout << result << std::endl;
+        std::cout << "hello4" << std::endl;
+    }
+    //how we set
+    //void *temp = (void *)physical_address;
+    //temp = value;
 }
 
 uint32_t Mmu::findSpace(uint32_t pid, uint32_t size, int page_size)

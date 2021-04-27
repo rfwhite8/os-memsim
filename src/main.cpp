@@ -152,10 +152,22 @@ int main(int argc, char **argv)
                 for(int i = 0; i < mmu->numProcesses(); i++){
                     printf("%d\n", mmu->processPid(i));
                 }
-            } /*else if it is a PID and variable name
-                print value
-            }*/else {
-                printf("error: print command not recognized\n");
+            }
+            else{
+                std::vector<std::string> vector_duo;
+
+                splitString(segmented_command[1], ':', vector_duo);//splits string for error checking
+
+                uint32_t pid = stoi(vector_duo[0]);
+                if(mmu->checkPid(pid) && mmu->checkVariable(pid, vector_duo[1]))
+                {
+                    mmu->printVariable(pid, vector_duo[1],
+                        page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, vector_duo[1])) + (int)memory);
+                }
+                else
+                {
+                    printf("error: print command not recognized\n");
+                }
             }
         }else if(strcmp(segmented_command[0], "free") == 0){
             if(!mmu->checkPid(std::stoi(segmented_command[1]))){
@@ -263,8 +275,11 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     physical_address += offset;
     std::cout << "physical_address: " << physical_address << std::endl;
     //   - insert `value` into `memory` at physical address
+    physical_address += (int)memory;
     void *temp = (void *)physical_address;
     temp = value;
+    //memory = 0x7f144a43b010
+    //physical address = 0x1190
 }
 
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table)
