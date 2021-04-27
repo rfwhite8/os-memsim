@@ -162,7 +162,7 @@ int main(int argc, char **argv)
                 if(mmu->checkPid(pid) && mmu->checkVariable(pid, vector_duo[1]))
                 {
                     mmu->printVariable(pid, vector_duo[1],
-                        page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, vector_duo[1])) + (int)memory);
+                        page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, vector_duo[1])));
                 }
                 else
                 {
@@ -274,8 +274,7 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     int physical_address = page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, var_name));
     physical_address += offset;
     std::cout << "physical_address: " << physical_address << std::endl;
-    //   - insert `value` into `memory` at physical address
-    physical_address += (int)memory;
+    //   - insert `value` into `memory` at physical address;
     void *temp = (void *)physical_address;
     temp = value;
     //memory = 0x7f144a43b010
