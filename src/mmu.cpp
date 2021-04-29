@@ -119,7 +119,7 @@ void Mmu::print()
     }
 }
 
-void Mmu::printVariable(uint32_t pid, std::string var_name, int physical_address)
+void Mmu::printVariable(uint32_t pid, std::string var_name, int physical_address, void *memory)
 {
     Process* process;
     Variable* variable;
@@ -157,17 +157,48 @@ void Mmu::printVariable(uint32_t pid, std::string var_name, int physical_address
 
     for(int i = 0; i < 4*data_size && i < variable->size; i += data_size)
     {
-        void *temp = (void *)(physical_address + i);
-        char *charptr = (char *)temp;
-        std::cout << "hello2.5" << std::endl;
-        char result = *charptr;
-        std::cout << "hello3" << std::endl;
-        std::cout << result << std::endl;
-        std::cout << "hello4" << std::endl;
+        void *temp;
+        temp = (void *)((char *)memory + physical_address + i);
+        if(variable->type == DataType::Char)
+        {
+            char *valueptr = (char *)temp;
+            std::cout << *valueptr;
+        }
+        else if(variable->type == DataType::Short)
+        {
+            short *valueptr = (short *)temp;
+            std::cout << *valueptr;
+        }
+        else if(variable->type == DataType::Int)
+        {
+            int *valueptr = (int *)temp;
+            std::cout << *valueptr;
+        }
+        else if(variable->type == DataType::Float)
+        {
+            float *valueptr = (float *)temp;
+            std::cout << *valueptr;
+        }
+        else if(variable->type == DataType::Long)
+        {
+            long *valueptr = (long *)temp;
+            std::cout << *valueptr;
+        }
+        else if(variable->type == DataType::Double)
+        {
+            double *valueptr = (double *)temp;
+            std::cout << *valueptr;
+        }
+        if(i + data_size < variable->size)
+        {
+            std::cout << ", ";
+        }
+        if(i + data_size < variable->size && i/data_size == 3)
+        {
+            std::cout << "... [" << variable->size/data_size << " items]";
+        }
     }
-    //how we set
-    //void *temp = (void *)physical_address;
-    //temp = value;
+    std::cout << std::endl;
 }
 
 uint32_t Mmu::findSpace(uint32_t pid, uint32_t size, int page_size)

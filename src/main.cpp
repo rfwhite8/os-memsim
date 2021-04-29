@@ -12,7 +12,7 @@
 void printStartMessage(int page_size);
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table);
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table, bool creation);
-void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
+void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int size);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 void splitString(std::string text, char d, std::vector<std::string>& result);
@@ -105,44 +105,66 @@ int main(int argc, char **argv)
                 int offset = std::stoi(segmented_command[3]);
                 DataType type = mmu->getDataType(pid, var_name);
                 int var_size = 0;
-                int datype = -1;
                 if(type == DataType::Short)
                 {
-                    datype = 1;
-                    var_size = 2;
+                    for(int i = 4; i < vector_command.size(); i++)
+                    {
+                        short value = std::stoi(segmented_command[i]);
+                        short *valueptr = &value;
+                        setVariable(pid, var_name, offset, (void *)valueptr, mmu, page_table, memory, 2);
+                        offset += 2;
+                    }
                 }
                 else if(type == DataType::Int)
                 {
-                    datype = 2;
-                    var_size = 4;
+                    for(int i = 4; i < vector_command.size(); i++)
+                    {
+                        int value = std::stoi(segmented_command[i]);
+                        int *valueptr = &value;
+                        setVariable(pid, var_name, offset, (void *)valueptr, mmu, page_table, memory, 4);
+                        offset += 4;
+                    }
                 }
                 else if (type == DataType::Float)
                 {
-                    datype = 3;
-                    var_size = 4;
+                    for(int i = 4; i < vector_command.size(); i++)
+                    {
+                        float value = std::stof(segmented_command[i]);
+                        float *valueptr = &value;
+                        setVariable(pid, var_name, offset, (void *)valueptr, mmu, page_table, memory, 4);
+                        offset += 4;
+                    }
                 }
                 else if(type == DataType::Long)
                 {
-                    datype = 4;
-                    var_size = 8;
+                    for(int i = 4; i < vector_command.size(); i++)
+                    {
+                        long value = std::stol(segmented_command[i]);
+                        long *valueptr = &value;
+                        setVariable(pid, var_name, offset, (void *)valueptr, mmu, page_table, memory, 8);
+                        offset += 8;
+                    }
                 }
                 else if(type == DataType::Double)
                 {
-                    datype = 5;
-                    var_size = 8;
+                    for(int i = 4; i < vector_command.size(); i++)
+                    {
+                        double value = std::stod(segmented_command[i]);
+                        double *valueptr = &value;
+                        setVariable(pid, var_name, offset, (void *)valueptr, mmu, page_table, memory, 8);
+                        offset += 8;
+                    }
                 }
                 else
                 {
-                    datype = 0;
-                    var_size = 1;
+                    for(int i = 4; i < vector_command.size(); i++)
+                    {
+                        setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory, 1);
+                        offset += 1;
+                    }
                 }
-                for(int i = 4; i < vector_command.size(); i++)
-                {
-                    setVariable(pid, var_name, offset, segmented_command[i], mmu, page_table, memory);
-                    offset += var_size;
-                }
-                //can do multiple values all at once
-                }
+            //can do multiple values all at once
+            }
         }else if(strcmp(segmented_command[0], "print") == 0 && segmented_command[1] != NULL){
             if(strcmp(segmented_command[1], "mmu") == 0){
                 mmu->print();
@@ -154,20 +176,29 @@ int main(int argc, char **argv)
                 }
             }
             else{
-                std::vector<std::string> vector_duo;
-
-                splitString(segmented_command[1], ':', vector_duo);//splits string for error checking
-
-                uint32_t pid = stoi(vector_duo[0]);
-                if(mmu->checkPid(pid) && mmu->checkVariable(pid, vector_duo[1]))
+                try
                 {
-                    mmu->printVariable(pid, vector_duo[1],
-                        page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, vector_duo[1])));
+                    std::vector<std::string> vector_duo;
+
+                    splitString(segmented_command[1], ':', vector_duo);//splits string for error checking
+
+                    uint32_t pid = stoi(vector_duo[0]);
+                    if(mmu->checkPid(pid) && mmu->checkVariable(pid, vector_duo[1]))
+                    {
+                        mmu->printVariable(pid, vector_duo[1],
+                            page_table->getPhysicalAddress(pid, mmu->getVirtualAddress(pid, vector_duo[1])), memory);
+                    }
+                    else
+                    {
+                        printf("error: print command not recognized\n");
+                    }
                 }
-                else
+                catch(const std::exception& e)
                 {
                     printf("error: print command not recognized\n");
                 }
+                
+
             }
         }else if(strcmp(segmented_command[0], "free") == 0){
             if(!mmu->checkPid(std::stoi(segmented_command[1]))){
@@ -267,7 +298,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }
 }
 
-void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
+void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int size)
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
@@ -275,8 +306,12 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     physical_address += offset;
     std::cout << "physical_address: " << physical_address << std::endl;
     //   - insert `value` into `memory` at physical address;
-    void *temp = (void *)physical_address;
-    temp = value;
+    void *temp;
+    temp = (void*)((char *)memory + physical_address);
+    std::memcpy(temp, value, size);
+    std::cout << "temp: " << temp << std::endl;
+    //void *temp = (void *)physical_address;
+    //temp = value;
     //memory = 0x7f144a43b010
     //physical address = 0x1190
 }

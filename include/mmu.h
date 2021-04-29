@@ -33,7 +33,7 @@ public:
     uint32_t createProcess();
     void addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address);
     void print();
-    void printVariable(uint32_t pid, std::string var_name, int physical_address);
+    void printVariable(uint32_t pid, std::string var_name, int physical_address, void *memory);
     int processPid(int index);
     bool checkPid(uint32_t pid);
     bool checkVariable(uint32_t pid, std::string var_name);
