@@ -39,6 +39,24 @@ void Mmu::deleteProcess(uint32_t pid){
     }
 }
 
+void Mmu::deleteVariable(uint32_t pid, std::string var_name){
+    printf("hello0");
+    for (int i = 0; i < _processes.size(); i++)
+    {
+        if(_processes[i]->pid == pid){
+            printf("hello1");
+            for (int a = 0; i < _processes[i]->variables.size(); i++){
+                if(_processes[i]->variables[a]->name == var_name){
+                    printf("number of variables: %d\n", _processes[i]->variables.size());
+                    _processes[i]->variables.erase(_processes[i]->variables.begin() + a);
+                    break;
+                }
+            }
+            break;
+        }
+    }
+}
+
 void Mmu::addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address)
 {
     int i;
@@ -107,12 +125,9 @@ void Mmu::print()
     {
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
-            // TODO: print all variables (excluding <FREE_SPACE> entries)
-            //std::cout << _processes[i]->pid << "|" << _processes[i]->variables[j]->name << "|" <<
-                //_processes[i]->variables[j]->virtual_address << "|" << _processes[i]->variables[j]->size << std::endl;
             if(_processes[i]->variables[j]->type != DataType::FreeSpace)
             {
-                printf("%6d|%15s|%14u|%12u\n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(),
+                printf(" %-5d| %-14s| %12u |%11u \n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(),
                 _processes[i]->variables[j]->virtual_address, _processes[i]->variables[j]->size);
             }
         }
@@ -251,7 +266,7 @@ uint32_t Mmu::newPage(uint32_t pid)
     }
 
     process->page_count += 1;
-    return process->page_count;
+    return process->page_count - 1;
 }
 
 uint32_t Mmu::getVirtualAddress(uint32_t pid, std::string var_name)

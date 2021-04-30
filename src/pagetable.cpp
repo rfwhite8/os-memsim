@@ -62,6 +62,10 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     _table[entry] = frame;
 }
 
+void PageTable::deletePage(uint32_t pid, int page_number){
+    
+}
+
 int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
 {
     // Convert virtual address to page_number and page_offset
@@ -97,7 +101,7 @@ void PageTable::print()
 
     for (i = 0; i < keys.size(); i++)
     {
-        //printf("%6d|%12d|%14d", sortedKeys[i]->pid, );
+        printf("%18s|%14d\n", keys[i].c_str(), _table[keys[i]]);
     }
 }
 

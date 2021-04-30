@@ -43,6 +43,7 @@ public:
     uint32_t getVirtualAddress(uint32_t pid, std::string var_name);
     DataType getDataType(uint32_t pid, std::string var_name);
     void deleteProcess(uint32_t pid);
+    void deleteVariable(uint32_t pid, std::string var_name);
 };
 
 #endif // __MMU_H_
