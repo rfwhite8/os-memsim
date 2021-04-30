@@ -14,7 +14,7 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table, bool creation, uint32_t mem_size);
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory, int size);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
-void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table, int page_count);
+void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 void splitString(std::string text, char d, std::vector<std::string>& result);
 void vectorOfStringsToArrayOfCharArrays(std::vector<std::string>& list, char ***result);
 
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
                 printf("error: process not found\n");
             } else {
                 int pid = std::stoi(segmented_command[1]);
-                terminateProcess(pid, mmu, page_table, );
+                terminateProcess(pid, mmu, page_table);
             }
         }else{
             printf("error: command not recognized\n");
@@ -347,11 +347,15 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
     //   - free page if this variable was the only one on a given page
 }
 
-void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table, int page_count)
+void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
     //   - free all pages associated with given process
-    page_table->deletePage(pid);
+    int max_pages = mmu->getPageCount(pid);
+    for(int i = 0; i < max_pages; i++)
+    {
+        page_table->deletePage(pid, i);
+    }
     //   - remove process from MMU
     mmu->deleteProcess(pid);
 }

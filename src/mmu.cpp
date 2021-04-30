@@ -318,3 +318,18 @@ DataType Mmu::getDataType(uint32_t pid, std::string var_name)
 
     return variable->type;
 }
+
+int Mmu::getPageCount(uint32_t pid)
+{
+    Process* process;
+    for(int i = 0; i < _processes.size(); i++)
+    {
+        if(pid == _processes[i]->pid)
+        {
+            process = _processes[i];
+            break;
+        }
+    }
+
+    return process->page_count;
+}

@@ -44,6 +44,7 @@ public:
     DataType getDataType(uint32_t pid, std::string var_name);
     void deleteProcess(uint32_t pid);
     void deleteVariable(uint32_t pid, std::string var_name);
+    int getPageCount(uint32_t pid);
 };
 
 #endif // __MMU_H_

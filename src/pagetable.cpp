@@ -62,8 +62,11 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     _table[entry] = frame;
 }
 
-void PageTable::deletePage(uint32_t pid, int page_number){
-    
+void PageTable::deletePage(uint32_t pid, int page_number)
+{
+    std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
+
+    _table.erase(entry);
 }
 
 int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
